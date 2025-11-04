@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blood Buddy - Find & Donate Blood</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.0/feather.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .blood-card {
+            transition: all 0.3s ease;
+        }
+        .blood-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .portal-card {
+            transition: all 0.3s ease;
+        }
+        .portal-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+        }
+        .modal-backdrop {
+            background-color: rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div id="app" class="max-w-7xl mx-auto">
+
+        <!-- Portal Selection Screen -->
+        <div id="portal-selection-screen" class="min-h-screen flex items-center justify-center bg-red-500 p-4">
+            <div class="text-center">
+                <div class="bg-white p-8 rounded-2xl shadow-lg mb-8">
+                    <h1 class="text-5xl font-bold text-red-600">Blood Buddy</h1>
+                    <p class="text-gray-500 mt-2 text-lg">Connecting Donors, Saving Lives</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div onclick="showAuth('user')" class="portal-card bg-white p-8 rounded-2xl shadow-lg cursor-pointer text-left">
+                        <i data-feather="users" class="w-12 h-12 text-red-500 mb-4"></i>
+                        <h2 class="text-2xl font-bold text-gray-800">User Portal</h2>
+                        <p class="text-gray-600">For Donors & Blood Requesters</p>
+                    </div>
+                    <div onclick="showAuth('organization')" class="portal-card bg-white p-8 rounded-2xl shadow-lg cursor-pointer text-left">
+                        <i data-feather="plus-circle" class="w-12 h-12 text-red-500 mb-4"></i>
+                        <h2 class="text-2xl font-bold text-gray-800">Organization Portal</h2>
+                        <p class="text-gray-600">For Hospitals, Blood Banks, NGOs, etc.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Auth Screens -->
+        <div id="auth-container" class="hidden min-h-screen items-center justify-center bg-red-500 p-4">
+             <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
+                 <button onclick="showPortalSelection()" class="text-gray-500 hover:text-red-600 mb-4 flex items-center"><i data-feather="arrow-left" class="mr-2"></i> Back</button>
+                <!-- User Auth -->
+                <div id="user-auth">
+                    <h1 class="text-3xl font-bold text-red-600 mb-6 text-center">User Portal</h1>
+                    <!-- User Login Form -->
+                    <div id="user-login-form">
+                        <h2 class="text-2xl font-semibold text-gray-800 mb-4">Login</h2>
+                        <input id="login-email" type="email" placeholder="Email" class="w-full p-3 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+                        <input id="login-password" type="password" placeholder="Password" class="w-full p-3 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+                        <button onclick="login()" class="w-full bg-red-600 text-white p-3 rounded-lg font-semibold hover:bg-red-700 transition">Login</button>
+                        <p class="text-center mt-4 text-gray-600">Don't have an account? <a href="#" onclick="toggleUserAuth('register')" class="text-red-600 hover:underline">Register Now</a></p>
+                    </div>
+                    <!-- User Registration Form -->
+                    <div id="user-register-form" class="hidden">
+                        <h2 class="text-2xl font-semibold text-gray-800 mb-4">Register</h2>
+                        <input id="register-name" type="text" placeholder="Full Name" class="w-full p-3 mb-4 border border-gray-300 rounded-lg">
+                        <input id="register-email" type="email" placeholder="Email" class="w-full p-3 mb-4 border border-gray-300 rounded-lg">
+                        <input id="register-password" type="password" placeholder="Password" class="w-full p-3 mb-4 border border-gray-300 rounded-lg">
+                        <select id="register-blood-group" class="w-full p-3 mb-4 border border-gray-300 rounded-lg"><option value="">Select Blood Group</option><option value="A+">A+</option><option value="A-">A-</option><option value="B+">B+</option><option value="B-">B-</option><option value="AB+">AB+</option><option value="AB-">AB-</option><option value="O+">O+</option><option value="O-">O-</option></select>
+                        <button onclick="register()" class="w-full bg-red-600 text-white p-3 rounded-lg font-semibold hover:bg-red-700 transition">Register</button>
+                        <p class="text-center mt-4 text-gray-600">Already have an account? <a href="#" onclick="toggleUserAuth('login')" class="text-red-600 hover:underline">Login</a></p>
+                    </div>
+                </div>
+                <!-- Organization Auth -->
+                <div id="organization-auth" class="hidden">
+                    <h1 class="text-3xl font-bold text-red-600 mb-6 text-center">Organization Portal</h1>
+                    <!-- Organization Login Form -->
+                    <div id="organization-login-form">
+                        <h2 class="text-2xl font-semibold text-gray-800 mb-4">Organization Login</h2>
+                        <input id="organization-login-email" type="email" placeholder="Organization Email" class="w-full p-3 mb-4 border border-gray-300 rounded-lg">
+                        <input id="organization-login-password" type="password" placeholder="Password" class="w-full p-3 mb-4 border border-gray-300 rounded-lg">
+                        <button onclick="loginOrganization()" class="w-full bg-red-600 text-white p-3 rounded-lg font-semibold hover:bg-red-700 transition">Login</button>
+                        <p class="text-center mt-4 text-gray-600">Need to register your organization? <a href="#" onclick="toggleOrganizationAuth('register')" class="text-red-600 hover:underline">Register Here</a></p>
+                    </div>
+                    <!-- Organization Registration Form -->
+                    <div id="organization-register-form" class="hidden">
+                        <h2 class="text-2xl font-semibold text-gray-800 mb-4">Organization Registration</h2>
+                        <input id="organization-register-name" type="text" placeholder="Organization Full Name" class="w-full p-3 mb-4 border border-gray-300 rounded-lg">
+                        <input id="organization-register-email" type="email" placeholder="Official Email" class="w-full p-3 mb-4 border border-gray-300 rounded-lg">
+                        <input id="organization-register-password" type="password" placeholder="Create Password" class="w-full p-3 mb-4 border border-gray-300 rounded-lg">
+                        <select id="organization-register-type" onchange="handleOrgTypeChange()" class="w-full p-3 mb-4 border border-gray-300 rounded-lg">
+                            <option value="">Select Organization Type</option>
+                            <option value="Hospital">Hospital</option>
+                            <option value="Blood Bank">Blood Bank</option>
+                            <option value="NGO">NGO</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <textarea id="organization-register-other" placeholder="Please describe your organization" class="w-full p-3 mb-4 border border-gray-300 rounded-lg hidden" rows="3"></textarea>
+                        <input id="organization-register-gov-id" type="text" placeholder="Govt. Registration Number" class="w-full p-3 mb-4 border border-gray-300 rounded-lg">
+                        <p class="text-xs text-gray-500 mb-4">Your registration will be reviewed. You will be notified via email upon verification.</p>
+                        <button onclick="registerOrganization()" class="w-full bg-red-600 text-white p-3 rounded-lg font-semibold hover:bg-red-700 transition">Submit for Verification</button>
+                        <p class="text-center mt-4 text-gray-600">Already registered? <a href="#" onclick="toggleOrganizationAuth('login')" class="text-red-600 hover:underline">Login</a></p>
+                    </div>
+                     <!-- Organization Verification Pending -->
+                    <div id="organization-verification-pending" class="hidden text-center">
+                        <i data-feather="clock" class="w-16 h-16 text-yellow-500 mx-auto mb-4"></i>
+                        <h2 class="text-2xl font-semibold text-gray-800 mb-2">Registration Submitted</h2>
+                        <p class="text-gray-600">Your organization's registration is pending verification. This process usually takes 24-48 hours. Thank you for your patience.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main USER Application -->
+        <div id="main-app" class="hidden">
+            <header class="bg-white shadow-md p-4 flex justify-between items-center sticky top-0 z-10">
+                <div class="flex items-center space-x-2">
+                    <i data-feather="droplet" class="text-red-600"></i>
+                    <h1 class="text-2xl font-bold text-red-600">Blood Buddy</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span id="user-greeting" class="font-semibold text-gray-700"></span>
+                    <button onclick="logout()" class="text-gray-600 hover:text-red-600"><i data-feather="log-out"></i></button>
+                </div>
+            </header>
+            <nav class="bg-red-600 text-white">
+                <div class="max-w-7xl mx-auto px-4">
+                    <div class="flex justify-center space-x-2 sm:space-x-8 py-3 overflow-x-auto">
+                        <button onclick="showScreen('dashboard-screen', true)" class="nav-link active font-semibold flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-red-700"><i data-feather="home"></i> <span>Dashboard</span></button>
+                        <button onclick="showScreen('availability-screen', true)" class="nav-link font-semibold flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-red-700"><i data-feather="map-pin"></i> <span>Availability</span></button>
+                        <button onclick="showScreen('guidelines-screen', true)" class="nav-link font-semibold flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-red-700"><i data-feather="shield"></i> <span>Guidelines</span></button>
+                        <button onclick="showScreen('history-screen', true)" class="nav-link font-semibold flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-red-700"><i data-feather="archive"></i> <span>History</span></button>
+                    </div>
+                </div>
+            </nav>
+            <main class="p-4 md:p-8">
+                <!-- User Dashboard Screen -->
+                <div id="dashboard-screen" class="screen">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="lg:col-span-2 space-y-6">
+                            <div class="bg-white p-6 rounded-2xl shadow-md">
+                               <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-4">
+                                    <h2 class="text-2xl font-bold text-gray-800">Active Blood Requests</h2>
+                                    <button onclick="openModal('emergency-request-modal')" class="w-full sm:w-auto bg-yellow-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-yellow-600 flex items-center justify-center space-x-2"><i data-feather="alert-triangle"></i><span>Emergency Request</span></button>
+                               </div>
+                               <div id="requests-list" class="space-y-4 max-h-96 overflow-y-auto pr-2"></div>
+                            </div>
+                        </div>
+                        <div class="space-y-6">
+                             <div class="bg-white p-6 rounded-2xl shadow-md">
+                                <h2 class="text-2xl font-bold text-gray-800 mb-4">My Profile</h2>
+                                <div id="user-profile" class="space-y-3"></div>
+                            </div>
+                            <div id="donor-eligibility-card" class="bg-white p-6 rounded-2xl shadow-md">
+                                <h2 class="text-2xl font-bold text-gray-800 mb-4">Donor Status</h2>
+                                <div id="eligibility-status"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Other User Screens... -->
+                 <div id="availability-screen" class="screen hidden">
+                    <div class="bg-white p-6 rounded-2xl shadow-md">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-1">Real-time Availability</h2>
+                        <p class="text-gray-500 mb-6">Blood banks in Katraj, Pune region.</p>
+                        <div class="mb-6 flex flex-col sm:flex-row gap-4">
+                            <label for="blood-group-filter" class="font-semibold text-gray-700 my-auto">Filter by Blood Group:</label>
+                             <select id="blood-group-filter" onchange="filterAvailability()" class="flex-grow p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"><option value="all">All Blood Groups</option><option value="A+">A+</option><option value="A-">A-</option><option value="B+">B+</option><option value="B-">B-</option><option value="AB+">AB+</option><option value="AB-">AB-</option><option value="O+">O+</option><option value="O-">O-</option></select>
+                        </div>
+                        <div id="organizations-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                    </div>
+                </div>
+                <div id="guidelines-screen" class="screen hidden"><div class="grid grid-cols-1 lg:grid-cols-2 gap-8"><div class="bg-white p-6 rounded-2xl shadow-md"><h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center space-x-2"><i data-feather="check-circle" class="text-green-500"></i><span>Donor Eligibility Criteria</span></h2><ul class="list-disc list-inside space-y-3 text-gray-700"><li><strong>Age:</strong> Between 18 and 65 years.</li><li><strong>Weight:</strong> Minimum 50 kg.</li><li><strong>Health:</strong> Should be in good health, free from any major diseases.</li><li><strong>Hemoglobin:</strong> Minimum 12.5 g/dL.</li><li><strong>Donation Gap:</strong> At least 3 months since your last donation.</li><li><strong>No Tattoos/Piercings:</strong> Within the last 6 months.</li></ul></div><div class="bg-white p-6 rounded-2xl shadow-md"><h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center space-x-2"><i data-feather="alert-triangle" class="text-yellow-500"></i><span>Post-Donation Guidelines</span></h2><div class="space-y-4"><div><h3 class="font-bold text-lg text-gray-800">Do's:</h3><ul class="list-disc list-inside space-y-2 text-gray-700 mt-2"><li>Drink plenty of fluids for the next 24-48 hours.</li><li>Eat a healthy meal rich in iron.</li><li>Keep the bandage on for at least 4-5 hours.</li></ul></div><div><h3 class="font-bold text-lg text-gray-800">Don'ts:</h3><ul class="list-disc list-inside space-y-2 text-gray-700 mt-2"><li>Avoid strenuous physical activity for the rest of the day.</li><li>Do not consume alcohol for at least 24 hours.</li></ul></div></div></div></div></div>
+                <div id="history-screen" class="screen hidden"><div class="bg-white p-6 rounded-2xl shadow-md"><h2 class="text-2xl font-bold text-gray-800 mb-4">My Activity History</h2><div id="user-history" class="space-y-4"></div></div></div>
+            </main>
+        </div>
+
+        <!-- Main ORGANIZATION Application -->
+        <div id="organization-app" class="hidden">
+             <header class="bg-white shadow-md p-4 flex justify-between items-center sticky top-0 z-10">
+                <div class="flex items-center space-x-2">
+                    <i data-feather="plus-circle" class="text-red-600"></i>
+                    <h1 class="text-2xl font-bold text-red-600">Organization Portal</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span id="organization-greeting" class="font-semibold text-gray-700"></span>
+                    <button onclick="logout()" class="text-gray-600 hover:text-red-600"><i data-feather="log-out"></i></button>
+                </div>
+            </header>
+            <nav class="bg-red-600 text-white">
+                 <div class="max-w-7xl mx-auto px-4">
+                    <div class="flex justify-center space-x-2 sm:space-x-8 py-3 overflow-x-auto">
+                        <button onclick="showScreen('organization-dashboard-screen', false)" class="nav-link-organization active font-semibold flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-red-700"><i data-feather="activity"></i> <span>Dashboard</span></button>
+                        <button onclick="showScreen('organization-stock-screen', false)" class="nav-link-organization font-semibold flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-red-700"><i data-feather="inbox"></i> <span>Manage Stock</span></button>
+                        <button onclick="showScreen('organization-emergency-screen', false)" class="nav-link-organization font-semibold flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-red-700"><i data-feather="zap"></i> <span>Emergency</span></button>
+                    </div>
+                </div>
+            </nav>
+            <main class="p-4 md:p-8">
+                <!-- Organization Dashboard Screen -->
+                <div id="organization-dashboard-screen" class="screen-organization">
+                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                        <div class="lg:col-span-1">
+                            <div class="bg-white p-6 rounded-2xl shadow-md h-full flex flex-col">
+                               <h2 class="text-2xl font-bold text-gray-800 mb-4">Active Transfusion Requests</h2>
+                               <div id="organization-requests-list" class="space-y-4 max-h-[600px] overflow-y-auto pr-2 flex-grow"></div>
+                            </div>
+                        </div>
+                        <div class="lg:col-span-1">
+                             <div class="bg-white p-6 rounded-2xl shadow-md h-full flex flex-col">
+                                <h2 class="text-2xl font-bold text-gray-800 mb-4">Upcoming Donation Pledges</h2>
+                                <div id="organization-appointments-list" class="space-y-4 max-h-[600px] overflow-y-auto pr-2 flex-grow"></div>
+                            </div>
+                        </div>
+                         <div class="lg:col-span-1">
+                             <div class="bg-white p-6 rounded-2xl shadow-md h-full flex flex-col">
+                                <h2 class="text-2xl font-bold text-gray-800 mb-4">Completed Donations History</h2>
+                                <div id="organization-donations-list" class="space-y-4 max-h-[600px] overflow-y-auto pr-2 flex-grow"></div>
+                            </div>
+                        </div>
+                        <div class="lg:col-span-1">
+                             <div class="bg-white p-6 rounded-2xl shadow-md h-full flex flex-col">
+                                <h2 class="text-2xl font-bold text-gray-800 mb-4">Completed Transfusions History</h2>
+                                <div id="organization-transfusions-list" class="space-y-4 max-h-[600px] overflow-y-auto pr-2 flex-grow"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Organization Stock Management Screen -->
+                 <div id="organization-stock-screen" class="screen-organization hidden">
+                    <div class="bg-white p-6 rounded-2xl shadow-md">
+                        <div class="flex flex-col md:flex-row justify-between md:items-center mb-4 gap-4">
+                            <h2 class="text-2xl font-bold text-gray-800">Stock Management</h2>
+                            <button onclick="openModal('organization-request-modal')" class="bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 flex items-center space-x-2"><i data-feather="plus"></i><span>Create Blood Request</span></button>
+                        </div>
+                        
+                        <!-- Tabs for Stock -->
+                        <div class="border-b border-gray-200 mb-4">
+                            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                                <button onclick="showStockTab('manage')" id="manage-stock-tab" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-red-500 text-red-600">
+                                    Manage Blood Stock
+                                </button>
+                                <button onclick="showStockTab('history')" id="request-history-tab" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                                    Request History
+                                </button>
+                            </nav>
+                        </div>
+                        
+                        <!-- Manage Stock Content -->
+                        <div id="manage-stock-content">
+                            <p class="text-gray-500 mb-6">View your current stock and create public requests for blood units.</p>
+                            <div id="organization-stock-list" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4"></div>
+                        </div>
+
+                        <!-- Request History Content -->
+                        <div id="request-history-content" class="hidden">
+                             <p class="text-gray-500 mb-6">A log of all public blood requests created by your organization.</p>
+                            <div id="organization-request-history-list" class="space-y-4"></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Organization Emergency Screen -->
+                <div id="organization-emergency-screen" class="screen-organization hidden">
+                    <div class="bg-white p-6 rounded-2xl shadow-md">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Emergency Center</h2>
+                        <!-- Tabs -->
+                        <div class="border-b border-gray-200 mb-4">
+                            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                                <button onclick="showEmergencyTab('pending')" id="pending-tab" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-red-500 text-red-600">
+                                    Pending Requests
+                                </button>
+                                <button onclick="showEmergencyTab('schedule')" id="schedule-tab" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                                    Emergency Transfusion Schedule
+                                </button>
+                            </nav>
+                        </div>
+
+                        <!-- Pending Requests Content -->
+                        <div id="pending-requests-content">
+                            <p class="text-gray-500 mb-6">These requests require confirmation within 3 hours of posting.</p>
+                            <div id="emergency-requests-list-org" class="space-y-4"></div>
+                        </div>
+
+                        <!-- Schedule Content -->
+                        <div id="schedule-content" class="hidden">
+                             <p class="text-gray-500 mb-6">Upcoming emergency transfusions scheduled by users after your confirmation.</p>
+                            <div id="emergency-schedule-list-org" class="space-y-4"></div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Modals -->
+        <div id="cancel-modal" class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop p-4"><div class="bg-white rounded-2xl shadow-lg w-full max-w-sm p-6 relative text-center"><h2 class="text-2xl font-bold text-gray-800 mb-2">Cancel Appointment?</h2><p class="text-gray-600 mb-6">Are you sure? This action cannot be undone.</p><div class="flex justify-center gap-4"><button onclick="closeModal('cancel-modal')" class="w-full bg-gray-200 text-gray-800 p-3 rounded-lg font-semibold hover:bg-gray-300">Keep</button><button id="confirm-cancel-btn" onclick="confirmAndExecuteCancellation()" class="w-full bg-red-600 text-white p-3 rounded-lg font-semibold hover:bg-red-700">Yes, Cancel</button></div></div></div>
+        
+        <div id="appointment-modal" class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop p-4"><div class="bg-white rounded-2xl shadow-lg w-full max-w-lg p-6 relative"><button onclick="closeModal('appointment-modal')" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800"><i data-feather="x"></i></button><h2 id="appointment-modal-title" class="text-2xl font-bold text-gray-800 mb-4">Schedule Donation</h2><div id="appointment-org-container" class="mb-4"></div><label class="block font-semibold text-gray-700 mb-2">Blood Group</label><select id="appointment-blood-group" class="w-full p-3 mb-4 border border-gray-300 rounded-lg"><option value="A+">A+</option><option value="A-">A-</option><option value="B+">B+</option><option value="B-">B-</option><option value="AB+">AB+</option><option value="AB-">AB-</option><option value="O+">O+</option><option value="O-">O-</option></select><label class="block font-semibold text-gray-700 mb-2">Select Date</label><input type="date" id="appointment-date" class="w-full p-3 mb-4 border border-gray-300 rounded-lg"><div id="time-slot-container"><label class="block font-semibold text-gray-700 mb-2">Select Time Slot</label><select id="appointment-time" class="w-full p-3 mb-4 border border-gray-300 rounded-lg"><option>9:00 AM - 10:00 AM</option><option>10:00 AM - 11:00 AM</option><option>11:00 AM - 12:00 PM</option><option>2:00 PM - 3:00 PM</option><option>3:00 PM - 4:00 PM</option></select></div><div id="time-input-container" class="hidden"><label class="block font-semibold text-gray-700 mb-2">Select Time</label><input type="time" id="appointment-time-input" class="w-full p-3 mb-4 border border-gray-300 rounded-lg"></div><button onclick="submitAppointment()" class="w-full bg-red-600 text-white p-3 rounded-lg font-semibold hover:bg-red-700">Confirm Appointment</button></div></div>
+
+        <div id="alert-modal" class="fixed bottom-5 right-5 z-50 hidden"><div id="alert-content" class="p-4 rounded-lg text-white font-semibold"></div></div>
+        
+        <div id="organization-request-modal" class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop p-4"><div class="bg-white rounded-2xl shadow-lg w-full max-w-lg p-6 relative"><button onclick="closeModal('organization-request-modal')" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800"><i data-feather="x"></i></button><h2 class="text-2xl font-bold text-gray-800 mb-4">Request Blood Stock</h2><p class="text-gray-600 mb-6">This will create a public request visible to all donors.</p><label class="block font-semibold text-gray-700 mb-2">Required Blood Group</label><select id="organization-request-blood-group" class="w-full p-3 mb-4 border border-gray-300 rounded-lg"><option value="A+">A+</option><option value="A-">A-</option><option value="B+">B+</option><option value="B-">B-</option><option value="AB+">AB+</option><option value="AB-">AB-</option><option value="O+">O+</option><option value="O-">O-</option></select><label class="block font-semibold text-gray-700 mb-2">Units Required</label><input type="number" id="organization-request-units" placeholder="e.g., 5" class="w-full p-3 mb-4 border border-gray-300 rounded-lg"><button onclick="submitOrganizationRequest()" class="w-full bg-red-600 text-white p-3 rounded-lg font-semibold hover:bg-red-700">Submit Request</button></div></div>
+        
+        <div id="emergency-request-modal" class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop p-4"><div class="bg-white rounded-2xl shadow-lg w-full max-w-lg p-6 relative"><button onclick="closeModal('emergency-request-modal')" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800"><i data-feather="x"></i></button><h2 class="text-2xl font-bold text-gray-800 mb-4">Emergency Blood Request</h2><p class="text-gray-600 mb-6">This will send an urgent request to the selected organization. They must respond within 3 hours.</p><div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4"><input id="emergency-patient-name" type="text" placeholder="Patient's Full Name" class="w-full p-3 border border-gray-300 rounded-lg"><input id="emergency-contact-number" type="tel" placeholder="Your Contact Number" class="w-full p-3 border border-gray-300 rounded-lg"></div><div class="mb-4"><label class="block font-semibold text-gray-700 mb-2">Required Blood Group</label><select id="emergency-blood-group" class="w-full p-3 border border-gray-300 rounded-lg"><option value="">Select Blood Group</option><option value="A+">A+</option><option value="A-">A-</option><option value="B+">B+</option><option value="B-">B-</option><option value="AB+">AB+</option><option value="AB-">AB-</option><option value="O+">O+</option><option value="O-">O-</option><option value="Unknown">I don't know</option></select></div><div class="mb-4"><label class="block font-semibold text-gray-700 mb-2">Select Organization</label><select id="emergency-organization" class="w-full p-3 border border-gray-300 rounded-lg"></select></div><div class="mb-4"><label class="block font-semibold text-gray-700 mb-2">Reason/Note (Optional)</label><textarea id="emergency-note" placeholder="e.g., Accident victim, emergency surgery..." class="w-full p-3 border border-gray-300 rounded-lg" rows="2"></textarea></div><button onclick="submitEmergencyRequest()" class="w-full bg-yellow-500 text-white p-3 rounded-lg font-semibold hover:bg-yellow-600">Send Urgent Request</button></div></div>
+    </div>
+
+    <script>
+        // --- DATA SIMULATION ---
+        const DB = {
+            users: {
+                "priya@demo.com": { name: "Priya Sharma", password: "password123", bloodGroup: "O+", lastDonation: new Date('2024-07-01'), healthConditions: ["None"], history: [{ type: 'donation', date: '2024-07-01', location: 'Bharati Hospital' },{ type: 'donation', date: '2024-02-10', location: 'Red Cross Pune' },] },
+                "arjun@demo.com": { name: "Arjun Singh", password: "password123", bloodGroup: "A+", lastDonation: null, healthConditions: ["Thalassemia Minor"], history: [] },
+                "sunita@demo.com": { name: "Sunita Devi", password: "password123", bloodGroup: "B-", lastDonation: new Date('2025-01-05'), healthConditions: ["None"], history: [{ type: 'donation', date: '2025-01-05', location: 'Sassoon Hospital' },] }
+            },
+            organizationAccounts: {
+                "contact@bharati.com": { name: "Bharati Hospital", password: "password123", govId: "BH2001PUNE", verified: true, type: 'Hospital' },
+                "info@rubyhall.com": { name: "Ruby Hall Clinic", password: "password123", govId: "RHC1995PUNE", verified: true, type: 'Hospital' }
+            },
+            requests: [
+                { id: 1, requesterType: 'organization', organizationName: "Ruby Hall Clinic", bloodGroup: "A+", note: "Urgent need for surgery.", units: 2, date: new Date(), status: 'active' },
+                { id: 2, requesterType: 'organization', organizationName: "Sassoon General Hospital", bloodGroup: "O-", note: "Emergency stock requirement.", units: 8, date: new Date(Date.now() - 86400000), status: 'active' },
+                { id: 3, requesterType: 'organization', organizationName: "Bharati Hospital", bloodGroup: "B+", note: "Critically low stock for B+ group.", units: 5, date: new Date(Date.now() - 172800000), status: 'active'}
+            ],
+            emergencyRequests: [
+                 { id: 1665588000000, userId: "arjun@demo.com", userName: "Arjun Singh", patientName: "Rohan Doe", contact: "9876543210", organizationName: "Bharati Hospital", requestedBloodGroup: 'A+', note: 'Urgent surgery requirement.', requestTimestamp: new Date(Date.now() - 3600000), status: 'pending', orgActionTimestamp: null, transfusionTimestamp: null, cancellationReason: null },
+                 { id: 1665588000001, userId: "priya@demo.com", userName: "Priya Sharma", patientName: "Jane Smith", contact: "9876543211", organizationName: "Ruby Hall Clinic", requestedBloodGroup: 'O+', note: 'Post-accident trauma care.', requestTimestamp: new Date(Date.now() - 7200000), status: 'confirmed', orgActionTimestamp: new Date(Date.now() - 6000000), transfusionTimestamp: new Date(Date.now() + 86400000).toISOString(), cancellationReason: null }
+            ],
+            organizations: [
+                { name: "Bharati Hospital", accountEmail: "contact@bharati.com", location: "Katraj, Pune", history:[], availability: { "A+": 10, "A-": 3, "B+": 8, "B-": 1, "AB+": 5, "AB-": 0, "O+": 15, "O-": 2 } },
+                { name: "Sassoon General Hospital", accountEmail: null, location: "Near Pune Station", history:[], availability: { "A+": 12, "A-": 1, "B+": 5, "B-": 2, "AB+": 2, "AB-": 1, "O+": 20, "O-": 4 } },
+                { name: "Ruby Hall Clinic", accountEmail: "info@rubyhall.com", location: "Sassoon Road, Pune", history:[], availability: { "A+": 8, "A-": 2, "B+": 10, "B-": 3, "AB+": 6, "AB-": 2, "O+": 18, "O-": 3 } }
+            ]
+        };
+
+        let currentUser = null;
+        let currentOrganization = null;
+        let appointmentToCancelId = null;
+        const emergencyTimers = {};
+        
+        // --- INITIALIZATION ---
+        window.onload = () => {
+            feather.replace();
+            const loggedInUser = sessionStorage.getItem('bloodBuddyUser');
+            const loggedInOrg = sessionStorage.getItem('bloodBuddyOrganization');
+            if (loggedInUser) {
+                currentUser = JSON.parse(loggedInUser);
+                showApp();
+            } else if (loggedInOrg) {
+                currentOrganization = JSON.parse(loggedInOrg);
+                showOrganizationApp();
+            } else {
+                showPortalSelection();
+            }
+        };
+
+        // --- AUTH & PORTAL NAVIGATION ---
+        function showPortalSelection() {
+            document.getElementById('portal-selection-screen').style.display = 'flex';
+            document.getElementById('auth-container').style.display = 'none';
+            document.getElementById('main-app').style.display = 'none';
+            document.getElementById('organization-app').style.display = 'none';
+        }
+
+        function showAuth(type) {
+            document.getElementById('portal-selection-screen').style.display = 'none';
+            document.getElementById('auth-container').style.display = 'flex';
+            if (type === 'user') {
+                document.getElementById('user-auth').style.display = 'block';
+                document.getElementById('organization-auth').style.display = 'none';
+                document.getElementById('user-login-form').classList.remove('hidden');
+                document.getElementById('user-register-form').classList.add('hidden');
+            } else { 
+                document.getElementById('user-auth').style.display = 'none';
+                document.getElementById('organization-auth').style.display = 'block';
+                document.getElementById('organization-login-form').classList.remove('hidden');
+                document.getElementById('organization-register-form').classList.add('hidden');
+                document.getElementById('organization-verification-pending').classList.add('hidden');
+            }
+        }
+
+        function toggleUserAuth(form) {
+            document.getElementById('user-login-form').classList.toggle('hidden');
+            document.getElementById('user-register-form').classList.toggle('hidden');
+        }
+        
+        function toggleOrganizationAuth(form) {
+            document.getElementById('organization-login-form').classList.toggle('hidden');
+            document.getElementById('organization-register-form').classList.toggle('hidden');
+        }
+
+        function handleOrgTypeChange() {
+            const orgType = document.getElementById('organization-register-type').value;
+            const otherField = document.getElementById('organization-register-other');
+            if (orgType === 'Other') {
+                otherField.classList.remove('hidden');
+            } else {
+                otherField.classList.add('hidden');
+            }
+        }
+
+        // --- USER AUTH ---
+        function login() {
+            const email = document.getElementById('login-email').value.trim().toLowerCase();
+            const password = document.getElementById('login-password').value;
+            if (!email || !password) return showAlert('Please fill all fields', 'error');
+            const user = DB.users[email];
+            if (user && user.password === password) {
+                currentUser = { email, ...user };
+                sessionStorage.setItem('bloodBuddyUser', JSON.stringify(currentUser));
+                showApp();
+            } else { showAlert('Invalid email or password.', 'error'); }
+        }
+
+        function register() {
+            const name = document.getElementById('register-name').value.trim();
+            const email = document.getElementById('register-email').value.trim().toLowerCase();
+            const password = document.getElementById('register-password').value;
+            const bloodGroup = document.getElementById('register-blood-group').value;
+            if (!name || !email || !password || !bloodGroup) return showAlert('Please fill all fields', 'error');
+            if (DB.users[email]) return showAlert('User with this email already exists.', 'error');
+            const newUser = { name, password, bloodGroup, lastDonation: null, healthConditions: ["None"], history: [] };
+            DB.users[email] = newUser;
+            currentUser = { email, ...newUser };
+            sessionStorage.setItem('bloodBuddyUser', JSON.stringify(currentUser));
+            showAlert('Registration successful!', 'success');
+            showApp();
+        }
+
+        // --- ORGANIZATION AUTH ---
+        function loginOrganization() {
+            const email = document.getElementById('organization-login-email').value.trim().toLowerCase();
+            const password = document.getElementById('organization-login-password').value;
+            if (!email || !password) return showAlert('Please fill all fields', 'error');
+            const org = DB.organizationAccounts[email];
+            if (org && org.password === password) {
+                if (org.verified) {
+                    currentOrganization = { email, ...org };
+                    sessionStorage.setItem('bloodBuddyOrganization', JSON.stringify(currentOrganization));
+                    showOrganizationApp();
+                } else {
+                    document.getElementById('organization-login-form').classList.add('hidden');
+                    document.getElementById('organization-verification-pending').classList.remove('hidden');
+                }
+            } else { showAlert('Invalid credentials or organization not found.', 'error'); }
+        }
+
+        function registerOrganization() {
+            const name = document.getElementById('organization-register-name').value.trim();
+            const email = document.getElementById('organization-register-email').value.trim().toLowerCase();
+            const password = document.getElementById('organization-register-password').value;
+            const govId = document.getElementById('organization-register-gov-id').value.trim();
+            let orgType = document.getElementById('organization-register-type').value;
+            const otherDesc = document.getElementById('organization-register-other').value.trim();
+
+            if (!name || !email || !password || !govId || !orgType) return showAlert('Please fill all required fields', 'error');
+            if (orgType === 'Other' && !otherDesc) return showAlert('Please describe your organization type', 'error');
+            if (DB.organizationAccounts[email]) return showAlert('Organization with this email already registered.', 'error');
+            
+            DB.organizationAccounts[email] = { name, password, govId, verified: true, type: orgType, description: otherDesc || null }; 
+            
+            const newOrgData = { name, accountEmail: email, location: "Pune, India", history: [], availability: { "A+": 0, "A-": 0, "B+": 0, "B-": 0, "AB+": 0, "AB-": 0, "O+": 0, "O-": 0 } };
+            DB.organizations.push(newOrgData);
+            
+            document.getElementById('organization-register-form').classList.add('hidden');
+            document.getElementById('organization-verification-pending').classList.remove('hidden');
+            showAlert('Registration submitted! For demo, you are auto-verified and can now log in.', 'success');
+        }
+
+        function logout() {
+            currentUser = null;
+            currentOrganization = null;
+            sessionStorage.clear();
+            Object.values(emergencyTimers).forEach(clearInterval);
+            showPortalSelection();
+        }
+        
+        // --- APP DISPLAY LOGIC ---
+        function showApp() {
+            document.getElementById('auth-container').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+            document.getElementById('user-greeting').textContent = `Hi, ${currentUser.name.split(' ')[0]}`;
+            renderDashboard();
+            renderAvailability();
+            renderHistory();
+            showScreen('dashboard-screen', true);
+        }
+
+        function showOrganizationApp() {
+            document.getElementById('auth-container').style.display = 'none';
+            document.getElementById('organization-app').style.display = 'block';
+            document.getElementById('organization-greeting').textContent = currentOrganization.name;
+            renderOrganizationDashboard();
+            showScreen('organization-dashboard-screen', false);
+        }
+
+        // --- USER UI RENDERING ---
+        function renderDashboard() { renderRequests(); renderUserProfile(); renderEligibilityStatus(); }
+        
+        function renderRequests() {
+            const list = document.getElementById('requests-list');
+            list.innerHTML = '';
+            const activeRequests = DB.requests.filter(r => r.status === 'active' && r.requesterType === 'organization');
+            if (activeRequests.length === 0) {
+                list.innerHTML = `<p class="text-gray-500 text-center">No active organization requests right now.</p>`;
+                return;
+            }
+            activeRequests.forEach(req => {
+                const compatible = isCompatible(currentUser.bloodGroup, req.bloodGroup);
+                const card = `
+                    <div class="border rounded-lg p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 ${compatible ? 'border-green-300 bg-green-50' : 'border-gray-200'}">
+                        <div class="flex items-center gap-4">
+                           <div class="bg-red-100 text-red-600 font-bold text-2xl w-14 h-14 flex items-center justify-center rounded-full">${req.bloodGroup}</div>
+                           <div>
+                                <h3 class="font-bold text-lg text-gray-800 flex items-center gap-2"><i data-feather="plus-circle" class="w-5 h-5 text-blue-500"></i>${req.organizationName}</h3>
+                                <p class="text-gray-600">Urgently needs ${req.units} units. ${req.note}</p>
+                                <p class="text-sm text-gray-400 mt-1">${timeAgo(req.date)}</p>
+                           </div>
+                        </div>
+                        ${compatible ? `<button onclick="donateToRequest(${req.id})" class="w-full sm:w-auto bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 flex items-center justify-center space-x-2"><i data-feather="droplet"></i><span>Donate</span></button>` : ''}
+                    </div>
+                `;
+                list.innerHTML += card;
+            });
+            feather.replace();
+        }
+        
+        function renderUserProfile() { 
+            const profileDiv = document.getElementById('user-profile');
+            profileDiv.innerHTML = `<p><strong class="font-semibold text-gray-700">Name:</strong> ${currentUser.name}</p><p><strong class="font-semibold text-gray-700">Blood Group:</strong> <span class="font-bold text-red-600 text-lg">${currentUser.bloodGroup}</span></p><p><strong class="font-semibold text-gray-700">Health:</strong> ${currentUser.healthConditions.join(', ')}</p>`;
+        }
+
+        function renderEligibilityStatus() { 
+            const eligibilityDiv = document.getElementById('eligibility-status');
+            const threeMonthsAgo = new Date(); threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+            if (currentUser.lastDonation && new Date(currentUser.lastDonation) > threeMonthsAgo) {
+                const nextEligibleDate = new Date(currentUser.lastDonation); nextEligibleDate.setMonth(nextEligibleDate.getMonth() + 3);
+                eligibilityDiv.innerHTML = `<div class="text-center p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 rounded-lg"><p class="font-bold">Not Eligible Yet</p><p>Last donation: ${new Date(currentUser.lastDonation).toLocaleDateString()}.</p><p>Next eligible: ${nextEligibleDate.toLocaleDateString()}.</p></div>`;
+            } else { eligibilityDiv.innerHTML = `<div class="text-center p-4 bg-green-100 border-l-4 border-green-500 text-green-700 rounded-lg"><p class="font-bold text-lg">You are eligible to donate!</p><p>Your contribution can save a life.</p></div>`; }
+        }
+        
+        function renderAvailability(filterGroup = 'all') { 
+            const list = document.getElementById('organizations-list'); list.innerHTML = '';
+            DB.organizations.forEach(org => {
+                let availabilityHtml = '';
+                for (const group in org.availability) {
+                    if (filterGroup === 'all' || filterGroup === group) {
+                       const units = org.availability[group];
+                       availabilityHtml += `<div class="text-center p-2 rounded ${units > 0 ? 'bg-green-100' : 'bg-red-100'}"><p class="font-bold text-lg ${units > 0 ? 'text-green-800' : 'text-red-800'}">${group}</p><p class="text-sm ${units > 0 ? 'text-green-600' : 'text-red-600'}">${units} units</p></div>`;
+                    }
+                }
+                if (availabilityHtml === '') availabilityHtml = `<p class="text-gray-500 text-center col-span-full">No availability for ${filterGroup}.</p>`;
+                const card = `<div class="bg-white border rounded-lg p-4 flex flex-col justify-between blood-card"><div><h3 class="font-bold text-xl text-gray-800">${org.name}</h3><p class="text-gray-500 mb-4">${org.location}</p><div class="grid grid-cols-4 gap-2 mb-4">${availabilityHtml}</div></div><button onclick="openModal('appointment-modal', { context: 'general', organizationName: '${org.name}' })" class="w-full mt-2 bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 flex items-center justify-center space-x-2"><i data-feather="calendar"></i> <span>Book Appointment</span></button></div>`;
+                list.innerHTML += card;
+            });
+            feather.replace();
+        }
+        
+        function filterAvailability() { renderAvailability(document.getElementById('blood-group-filter').value); }
+
+        function renderHistory() {
+            const historyDiv = document.getElementById('user-history');
+            historyDiv.innerHTML = '';
+            const allHistory = [
+                ...currentUser.history,
+                ...DB.emergencyRequests.filter(req => req.userId === currentUser.email).map(req => ({ ...req,
+                    type: 'emergency'
+                }))
+            ].sort((a, b) => new Date(b.timestamp || b.date || b.requestTimestamp) - new Date(a.timestamp || a.date || a.requestTimestamp));
+
+            if (allHistory.length === 0) {
+                historyDiv.innerHTML = `<p class="text-gray-500 text-center">No activity history found.</p>`;
+                return;
+            }
+            allHistory.forEach(item => {
+                let icon = 'help-circle';
+                let backgroundColor = 'bg-gray-50';
+                let iconClasses = 'bg-gray-100 text-gray-600';
+                let details = '';
+                let title = "Activity";
+                let actionButtonHtml = '';
+                let statusText = item.status || '';
+                let statusColor = 'text-gray-500';
+
+                if (item.type === 'donation') {
+                    icon = 'award';
+                    backgroundColor = 'bg-green-50';
+                    iconClasses = 'bg-green-100 text-green-600';
+                    title = "Donation Completed";
+                    details = `At <strong>${item.location}</strong>`;
+                } else if (item.type === 'appointment') {
+                    icon = 'calendar';
+                    backgroundColor = 'bg-purple-50';
+                    iconClasses = 'bg-purple-100 text-purple-600';
+                    title = item.bookingType === 'transfusion' ? "Blood Transfusion Appointment" : "Donation Appointment";
+                    details = `At <strong>${item.location}</strong> for <strong>${item.bloodGroup}</strong>`;
+                    const appointmentTime = new Date(item.timestamp);
+                    const now = new Date();
+                    if (item.status === 'Completed') {
+                        statusText = `Completed`;
+                        statusColor = 'text-green-600';
+                        icon = 'check-circle';
+                    } else if (appointmentTime > now) {
+                        if (item.hospitalConfirmed) {
+                            statusText = `Confirmed for ${appointmentTime.toLocaleDateString()} at ${appointmentTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+                            statusColor = 'text-green-600';
+                        } else {
+                            statusText = `Pending Organization Approval`;
+                            statusColor = 'text-yellow-600';
+                        }
+                        if ((appointmentTime - now) / 36e5 >= 3) {
+                            actionButtonHtml = `<button onclick="openCancelModal(${item.id})" class="ml-auto bg-red-100 text-red-700 px-3 py-1 rounded-lg text-sm font-semibold hover:bg-red-200">Cancel</button>`;
+                        }
+                    } else {
+                        statusText = `Expired`;
+                        statusColor = 'text-gray-500';
+                    }
+                } else if (item.type === 'emergency') {
+                    icon = 'zap';
+                    backgroundColor = 'bg-yellow-50';
+                    iconClasses = 'bg-yellow-100 text-yellow-700';
+                    title = "Emergency Request";
+                    details = `For patient <strong>${item.patientName}</strong> at <strong>${item.organizationName}</strong>`;
+                    switch (item.status) {
+                        case 'pending':
+                            statusText = 'Pending organization response...';
+                            statusColor = 'text-yellow-600';
+                            break;
+                        case 'confirmed':
+                            statusText = 'Confirmed! Please schedule the transfusion.';
+                            statusColor = 'text-green-600';
+                            if (!item.transfusionTimestamp) {
+                                actionButtonHtml = `<button onclick="openModal('appointment-modal', { context: 'emergency-transfusion', emergencyRequestId: ${item.id} })" class="ml-auto bg-green-600 text-white px-3 py-2 rounded-lg text-sm font-semibold hover:bg-green-700">Schedule Now</button>`;
+                            } else {
+                                statusText = `Transfusion scheduled for ${new Date(item.transfusionTimestamp).toLocaleDateString()} at ${new Date(item.transfusionTimestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}.`;
+                            }
+                            break;
+                        case 'cancelled':
+                            statusText = `Cancelled by hospital. Reason: ${item.cancellationReason || 'Not specified'}`;
+                            statusColor = 'text-red-600';
+                            break;
+                        case 'expired':
+                            statusText = 'Expired. Hospital did not respond in time.';
+                            statusColor = 'text-gray-500';
+                            break;
+                        case 'completed':
+                            statusText = 'Transfusion Completed.';
+                            statusColor = 'text-blue-600';
+                            icon = 'check-circle';
+                            break;
+                    }
+                }
+
+                const cardDate = item.date ? new Date(item.date) : new Date(item.requestTimestamp);
+                const card = `<div class="border rounded-lg p-4 flex items-center gap-4 ${backgroundColor}"><div class="w-12 h-12 flex items-center justify-center rounded-full ${iconClasses} flex-shrink-0"><i data-feather="${icon}"></i></div><div class="flex-grow"><p class="font-bold text-gray-800">${title}</p><p class="text-gray-600">${details}</p><p class="text-sm text-gray-500">Requested on: ${cardDate.toLocaleDateString()}</p>${statusText ? `<p class="text-sm font-semibold ${statusColor}">${statusText}</p>` : ''}</div>${actionButtonHtml}</div>`;
+                historyDiv.innerHTML += card;
+            });
+            feather.replace();
+        }
+        
+        // --- ORGANIZATION UI RENDERING ---
+        function renderOrganizationDashboard() {
+            renderActiveTransfusionRequests();
+            renderPledgesForOrganization();
+            renderDonationsForOrganization();
+            renderCompletedTransfusionsForOrganization();
+            renderOrganizationStock();
+            renderEmergencyRequests();
+            renderEmergencySchedule();
+            renderOrganizationRequestHistory();
+        }
+
+        function renderActiveTransfusionRequests() {
+            const list = document.getElementById('organization-requests-list'); list.innerHTML = '';
+            let appointments = [];
+            Object.entries(DB.users).forEach(([email, user]) => {
+                user.history.forEach(item => {
+                    if (item.type === 'appointment' && item.location === currentOrganization.name && item.status !== 'Completed' && item.bookingType === 'transfusion') {
+                       appointments.push({ ...item, userEmail: email, userName: user.name, userBloodGroup: user.bloodGroup });
+                    }
+                });
+            });
+
+            if (appointments.length === 0) { list.innerHTML = `<p class="text-gray-500 text-center p-4">No active transfusion requests.</p>`; return; }
+            
+            appointments.sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp));
+            
+            list.innerHTML = appointments.map(appt => {
+                const apptTime = new Date(appt.timestamp); const now = new Date();
+                let actionButtonHtml = '';
+                if (appt.hospitalConfirmed && apptTime < now) {
+                    actionButtonHtml = `<button onclick="markAppointmentAsCompleted(${appt.id}, '${appt.userEmail}')" class="mt-2 w-full bg-indigo-600 text-white px-3 py-2 rounded-lg font-semibold hover:bg-indigo-700 flex items-center justify-center space-x-2"><i data-feather="check-square"></i><span>Mark as Completed</span></button>`;
+                } else if (appt.hospitalConfirmed) {
+                    actionButtonHtml = `<p class="mt-2 text-green-600 font-bold flex items-center justify-center"><i data-feather="check-circle" class="w-4 h-4 mr-1"></i> Confirmed</p>`;
+                } else {
+                    actionButtonHtml = `<button onclick="acceptAppointment(${appt.id}, '${appt.userEmail}')" class="mt-2 w-full bg-green-600 text-white px-3 py-2 rounded-lg font-semibold hover:bg-green-700 flex items-center justify-center space-x-2"><i data-feather="check"></i><span>Accept Appointment</span></button>`;
+                }
+
+                return `
+                    <div class="border rounded-lg p-4 flex flex-col justify-between">
+                        <div class="flex items-start gap-4">
+                            <div class="bg-blue-100 text-blue-600 font-bold text-xl w-12 h-12 flex items-center justify-center rounded-full flex-shrink-0">${appt.userBloodGroup}</div>
+                            <div>
+                                <h3 class="font-bold text-gray-800">${appt.userName}</h3>
+                                <p class="text-gray-600 font-semibold">${apptTime.toLocaleDateString()} at ${apptTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                            </div>
+                        </div>
+                        ${actionButtonHtml}
+                    </div>`;
+            }).join('');
+            feather.replace();
+        }
+        
+        function renderPledgesForOrganization() {
+            const list = document.getElementById('organization-appointments-list'); list.innerHTML = '';
+            let appointments = [];
+            Object.entries(DB.users).forEach(([email, user]) => {
+                user.history.forEach(item => {
+                    if (item.type === 'appointment' && item.location === currentOrganization.name && item.status !== 'Completed' && (item.bookingType === 'pledge' || item.bookingType === undefined)) {
+                       appointments.push({ ...item, userEmail: email, userName: user.name, userBloodGroup: user.bloodGroup });
+                    }
+                });
+            });
+
+            if (appointments.length === 0) { list.innerHTML = `<p class="text-gray-500 text-center p-4">No upcoming donation pledges.</p>`; return; }
+            
+            appointments.sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp));
+            
+            list.innerHTML = appointments.map(appt => {
+                const apptTime = new Date(appt.timestamp); const now = new Date();
+                let actionButtonHtml = '';
+                if (appt.hospitalConfirmed && apptTime < now) {
+                    actionButtonHtml = `<button onclick="markAppointmentAsCompleted(${appt.id}, '${appt.userEmail}')" class="mt-2 w-full bg-indigo-600 text-white px-3 py-2 rounded-lg font-semibold hover:bg-indigo-700 flex items-center justify-center space-x-2"><i data-feather="check-square"></i><span>Mark as Completed</span></button>`;
+                } else if (appt.hospitalConfirmed) {
+                    actionButtonHtml = `<p class="mt-2 text-green-600 font-bold flex items-center justify-center"><i data-feather="check-circle" class="w-4 h-4 mr-1"></i> Confirmed</p>`;
+                } else {
+                    actionButtonHtml = `<button onclick="acceptAppointment(${appt.id}, '${appt.userEmail}')" class="mt-2 w-full bg-green-600 text-white px-3 py-2 rounded-lg font-semibold hover:bg-green-700 flex items-center justify-center space-x-2"><i data-feather="check"></i><span>Accept Appointment</span></button>`;
+                }
+
+                return `
+                    <div class="border rounded-lg p-4 flex flex-col justify-between">
+                        <div class="flex items-start gap-4">
+                            <div class="bg-blue-100 text-blue-600 font-bold text-xl w-12 h-12 flex items-center justify-center rounded-full flex-shrink-0">${appt.userBloodGroup}</div>
+                            <div>
+                                <h3 class="font-bold text-gray-800">${appt.userName}</h3>
+                                <p class="text-gray-600 font-semibold">${apptTime.toLocaleDateString()} at ${apptTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                            </div>
+                        </div>
+                        ${actionButtonHtml}
+                    </div>`;
+            }).join('');
+            feather.replace();
+        }
+        
+        function renderDonationsForOrganization() {
+            const list = document.getElementById('organization-donations-list');
+            const orgData = DB.organizations.find(h => h.accountEmail === currentOrganization.email);
+            if (!orgData || !orgData.history || orgData.history.length === 0) {
+                list.innerHTML = `<p class="text-gray-500 text-center p-4">No donations received yet.</p>`; return;
+            }
+            list.innerHTML = orgData.history.filter(d => d.type === 'donation_received').map(donation => `
+                <div class="border rounded-lg p-4 flex items-start gap-4">
+                    <div class="bg-green-100 text-green-600 font-bold text-xl w-12 h-12 flex items-center justify-center rounded-full flex-shrink-0">${donation.bloodGroup}</div>
+                    <div><h3 class="font-bold text-gray-800">${donation.donorName}</h3><p class="text-gray-600">Donated on ${new Date(donation.date).toLocaleDateString()}</p></div>
+                </div>`).join('');
+        }
+        
+        function renderCompletedTransfusionsForOrganization() {
+            const list = document.getElementById('organization-transfusions-list');
+            const orgData = DB.organizations.find(h => h.accountEmail === currentOrganization.email);
+            if (!orgData || !orgData.history || orgData.history.length === 0) {
+                list.innerHTML = `<p class="text-gray-500 text-center p-4">No transfusions performed yet.</p>`; return;
+            }
+            const transfusionHistory = orgData.history.filter(d => d.type === 'transfusion_completed');
+            if (transfusionHistory.length === 0) {
+                list.innerHTML = `<p class="text-gray-500 text-center p-4">No transfusions performed yet.</p>`; return;
+            }
+            list.innerHTML = transfusionHistory.map(transfusion => `
+                <div class="border rounded-lg p-4 flex items-start gap-4">
+                    <div class="bg-blue-100 text-blue-600 font-bold text-xl w-12 h-12 flex items-center justify-center rounded-full flex-shrink-0">${transfusion.bloodGroup}</div>
+                    <div><h3 class="font-bold text-gray-800">${transfusion.userName}</h3><p class="text-gray-600">Received on ${new Date(transfusion.date).toLocaleDateString()}</p></div>
+                </div>`).join('');
+        }
+
+        function renderOrganizationStock() {
+            const list = document.getElementById('organization-stock-list');
+            const orgData = DB.organizations.find(h => h.accountEmail === currentOrganization.email);
+            if (!orgData) { list.innerHTML = `<p class="col-span-full">Stock data not available.</p>`; return; }
+            list.innerHTML = Object.entries(orgData.availability).map(([group, units]) => {
+                let bgColor, textColor, labelColor;
+                if (units === 0) {
+                    bgColor = 'bg-red-100';
+                    textColor = 'text-red-800';
+                    labelColor = 'text-red-600';
+                } else if (units <= 2) {
+                    bgColor = 'bg-yellow-100';
+                    textColor = 'text-yellow-800';
+                    labelColor = 'text-yellow-600';
+                } else {
+                    bgColor = 'bg-green-100';
+                    textColor = 'text-green-800';
+                    labelColor = 'text-green-600';
+                }
+                return `
+                <div class="text-center p-3 rounded-lg ${bgColor}">
+                    <p class="font-bold text-2xl ${textColor}">${group}</p>
+                    <p class="text-sm ${labelColor}">${units} units</p>
+                </div>`;
+            }).join('');
+        }
+        
+        function renderOrganizationRequestHistory() {
+            const list = document.getElementById('organization-request-history-list');
+            list.innerHTML = '';
+
+            const history = DB.requests.filter(req => req.requesterType === 'organization' && req.organizationName === currentOrganization.name);
+
+            if (history.length === 0) {
+                list.innerHTML = '<p class="text-gray-500 text-center p-4">You have not created any blood requests.</p>';
+                return;
+            }
+            
+            history.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+            list.innerHTML = history.map(req => {
+                const isFulfilled = req.status !== 'active';
+                const statusColor = isFulfilled ? 'text-gray-500' : 'text-green-600';
+                const statusBg = isFulfilled ? 'bg-gray-100' : 'bg-green-100';
+                const statusText = isFulfilled ? `Fulfilled` : 'Active';
+                
+                return `
+                    <div class="border rounded-lg p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div class="flex items-center gap-4">
+                           <div class="bg-red-100 text-red-600 font-bold text-2xl w-14 h-14 flex items-center justify-center rounded-full">${req.bloodGroup}</div>
+                           <div>
+                                <h3 class="font-bold text-lg text-gray-800">Requested ${req.units} units</h3>
+                                <p class="text-sm text-gray-500 mt-1">${new Date(req.date).toLocaleDateString()}</p>
+                           </div>
+                        </div>
+                        <div class="text-sm font-semibold capitalize px-3 py-1 rounded-full ${statusColor} ${statusBg}">
+                            ${statusText}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderEmergencySchedule() {
+            const list = document.getElementById('emergency-schedule-list-org');
+            list.innerHTML = '';
+
+            const scheduledTransfusions = DB.emergencyRequests.filter(req =>
+                (req.organizationName === currentOrganization.name || req.organizationName === currentOrganization.email) && // Check both name and email for matching
+                req.status === 'confirmed' &&
+                req.transfusionTimestamp &&
+                new Date(req.transfusionTimestamp) > new Date() // Only show upcoming
+            ).sort((a, b) => new Date(a.transfusionTimestamp) - new Date(b.transfusionTimestamp));
+
+            if (scheduledTransfusions.length === 0) {
+                list.innerHTML = '<p class="text-gray-500 text-center p-4">No upcoming emergency transfusions scheduled.</p>';
+                return;
+            }
+
+            list.innerHTML = scheduledTransfusions.map(req => {
+                const transfusionTime = new Date(req.transfusionTimestamp);
+                return `
+                    <div class="border-l-4 border-blue-500 bg-blue-50 rounded-lg p-4">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between">
+                            <div>
+                                <p class="font-bold text-lg text-gray-800">Patient: ${req.patientName}</p>
+                                <p class="text-gray-600">Blood Group: <span class="font-bold">${req.requestedBloodGroup}</span> | Contact: ${req.contact}</p>
+                                <p class="text-sm text-gray-500 mt-1">Requested by ${req.userName}</p>
+                            </div>
+                            <div class="mt-4 md:mt-0 text-center md:text-right">
+                                <p class="font-bold text-lg text-blue-700">${transfusionTime.toLocaleDateString()}</p>
+                                <p class="font-semibold text-blue-600">${transfusionTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderEmergencyRequests() {
+            const list = document.getElementById('emergency-requests-list-org');
+            list.innerHTML = '';
+            Object.values(emergencyTimers).forEach(clearInterval);
+
+            const pendingRequests = DB.emergencyRequests.filter(req => req.organizationName === currentOrganization.name && req.status === 'pending');
+            
+            if (pendingRequests.length === 0) {
+                list.innerHTML = '<p class="text-gray-500 text-center p-4">No pending emergency requests.</p>';
+                return;
+            }
+
+            pendingRequests.forEach(req => {
+                const card = document.createElement('div');
+                card.className = 'border-l-4 border-yellow-500 bg-yellow-50 rounded-lg p-4';
+                card.id = `emergency-req-${req.id}`;
+                
+                const responseTimeLimit = new Date(req.requestTimestamp).getTime() + (3 * 60 * 60 * 1000);
+
+                const updateTimer = () => {
+                    const now = new Date().getTime();
+                    const timeLeft = responseTimeLimit - now;
+
+                    if (timeLeft <= 0) {
+                        card.innerHTML = `
+                            <div class="flex flex-col md:flex-row md:items-center justify-between">
+                                <div>
+                                    <p class="font-bold text-lg text-gray-800">Patient: ${req.patientName}</p>
+                                    <p class="text-gray-600">Blood Group: <span class="font-bold">${req.requestedBloodGroup}</span> | Contact: ${req.contact}</p>
+                                    <p class="text-sm text-gray-500 mt-1">Requested by ${req.userName} on ${new Date(req.requestTimestamp).toLocaleString()}</p>
+                                </div>
+                                <div class="mt-4 md:mt-0 text-center">
+                                    <p class="font-bold text-lg text-gray-500">Expired</p>
+                                    <p class="text-sm text-gray-400">Response time limit passed.</p>
+                                </div>
+                            </div>
+                        `;
+                        clearInterval(emergencyTimers[req.id]);
+                        const requestInDB = DB.emergencyRequests.find(r => r.id === req.id);
+                        if(requestInDB && requestInDB.status === 'pending') requestInDB.status = 'expired';
+                    } else {
+                        const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0');
+                        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
+                        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000).toString().padStart(2, '0');
+                        card.innerHTML = `
+                            <div class="flex flex-col md:flex-row md:items-start justify-between">
+                                <div class="flex-grow">
+                                    <p class="font-bold text-lg text-gray-800">Patient: ${req.patientName}</p>
+                                    <p class="text-gray-600">Blood Group: <span class="font-bold">${req.requestedBloodGroup}</span> | Contact: ${req.contact}</p>
+                                    ${req.note ? `<p class="text-sm text-gray-500 mt-2"><em>Note: ${req.note}</em></p>` : ''}
+                                    <p class="text-xs text-gray-400 mt-1">From: ${req.userName}</p>
+                                </div>
+                                <div class="mt-4 md:mt-0 md:ml-4 text-center flex-shrink-0">
+                                    <p class="font-bold text-2xl text-red-600">${hours}:${minutes}:${seconds}</p>
+                                    <p class="text-sm text-gray-500">Time to respond</p>
+                                </div>
+                            </div>
+                            <div class="mt-4 flex gap-4">
+                                <button onclick="confirmEmergencyRequest(${req.id})" class="w-full bg-green-600 text-white p-2 rounded-lg font-semibold hover:bg-green-700">Confirm</button>
+                                <button onclick="cancelEmergencyRequest(${req.id})" class="w-full bg-red-600 text-white p-2 rounded-lg font-semibold hover:bg-red-700">Cancel</button>
+                            </div>
+                        `;
+                    }
+                };
+
+                updateTimer();
+                emergencyTimers[req.id] = setInterval(updateTimer, 1000);
+                list.appendChild(card);
+            });
+        }
+
+        // --- UI NAVIGATION & MODALS ---
+        function showScreen(screenId, isUser) {
+            const screenClass = isUser ? '.screen' : '.screen-organization'; const navLinkClass = isUser ? '.nav-link' : '.nav-link-organization';
+            document.querySelectorAll(screenClass).forEach(s => s.classList.add('hidden'));
+            document.getElementById(screenId).classList.remove('hidden');
+            document.querySelectorAll(navLinkClass).forEach(l => {
+                l.classList.remove('active', 'bg-red-700');
+                if (l.getAttribute('onclick').includes(screenId)) l.classList.add('active', 'bg-red-700');
+            });
+             
+             if (screenId === 'organization-emergency-screen' && !isUser) {
+                showEmergencyTab('pending');
+            } else if (screenId === 'organization-stock-screen' && !isUser) {
+                showStockTab('manage');
+            } else {
+                 // Clear timers if we navigate away from the emergency screen
+                 Object.values(emergencyTimers).forEach(clearInterval);
+            }
+        }
+        
+        let modalData = {};
+        function openModal(modalId, data = {}) {
+            modalData = data;
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('hidden'); modal.classList.add('flex');
+            
+            if (modalId === 'appointment-modal') {
+                const titleEl = document.getElementById('appointment-modal-title');
+                const orgContainer = document.getElementById('appointment-org-container');
+                const bloodGroupSelect = document.getElementById('appointment-blood-group');
+                const timeSlotContainer = document.getElementById('time-slot-container');
+                const timeInputContainer = document.getElementById('time-input-container');
+
+                orgContainer.innerHTML = ''; 
+                bloodGroupSelect.disabled = false;
+                
+                if (data.context === 'request') {
+                    titleEl.textContent = 'Schedule Donation';
+                    orgContainer.innerHTML = `<label class="block font-semibold text-gray-700 mb-2">Donating To</label><p class="w-full p-3 border border-gray-200 bg-gray-100 rounded-lg">${data.organizationName}</p>`;
+                    bloodGroupSelect.value = data.bloodGroup; bloodGroupSelect.disabled = true;
+                    timeSlotContainer.classList.remove('hidden');
+                    timeInputContainer.classList.add('hidden');
+                } else if (data.context === 'emergency-transfusion') {
+                    const request = DB.emergencyRequests.find(r => r.id === data.emergencyRequestId);
+                    titleEl.textContent = 'Schedule Emergency Transfusion';
+                    orgContainer.innerHTML = `<label class="block font-semibold text-gray-700 mb-2">At</label><p class="w-full p-3 border border-gray-200 bg-gray-100 rounded-lg">${request.organizationName}</p>`;
+                    bloodGroupSelect.value = request.requestedBloodGroup === 'Unknown' ? currentUser.bloodGroup : request.requestedBloodGroup;
+                    timeSlotContainer.classList.add('hidden');
+                    timeInputContainer.classList.remove('hidden');
+                } else { // general booking from availability
+                    titleEl.textContent = 'Book Appointment';
+                    orgContainer.innerHTML = `<label class="block font-semibold text-gray-700 mb-2">At</label><p class="w-full p-3 border border-gray-200 bg-gray-100 rounded-lg">${data.organizationName}</p>`;
+                    bloodGroupSelect.value = currentUser.bloodGroup;
+                    timeSlotContainer.classList.remove('hidden');
+                    timeInputContainer.classList.add('hidden');
+                }
+                const today = new Date();
+                document.getElementById('appointment-date').value = today.toISOString().split('T')[0];
+                document.getElementById('appointment-date').min = today.toISOString().split('T')[0];
+
+            } else if (modalId === 'emergency-request-modal') {
+                const orgSelect = document.getElementById('emergency-organization');
+                orgSelect.innerHTML = DB.organizations.map(org => `<option value="${org.name}">${org.name}</option>`).join('');
+            }
+        }
+
+        function showEmergencyTab(tabName) {
+            const pendingContent = document.getElementById('pending-requests-content');
+            const scheduleContent = document.getElementById('schedule-content');
+            const pendingTab = document.getElementById('pending-tab');
+            const scheduleTab = document.getElementById('schedule-tab');
+
+            if (tabName === 'pending') {
+                pendingContent.classList.remove('hidden');
+                scheduleContent.classList.add('hidden');
+                pendingTab.classList.add('border-red-500', 'text-red-600');
+                pendingTab.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+                scheduleTab.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+                scheduleTab.classList.remove('border-red-500', 'text-red-600');
+                renderEmergencyRequests(); // Rerender timers when switching to this tab
+            } else { // schedule
+                pendingContent.classList.add('hidden');
+                scheduleContent.classList.remove('hidden');
+                scheduleTab.classList.add('border-red-500', 'text-red-600');
+                scheduleTab.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+                pendingTab.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+                pendingTab.classList.remove('border-red-500', 'text-red-600');
+                Object.values(emergencyTimers).forEach(clearInterval); // Stop timers when leaving pending tab
+                renderEmergencySchedule();
+            }
+        }
+
+        function showStockTab(tabName) {
+            const manageContent = document.getElementById('manage-stock-content');
+            const historyContent = document.getElementById('request-history-content');
+            const manageTab = document.getElementById('manage-stock-tab');
+            const historyTab = document.getElementById('request-history-tab');
+
+            if (tabName === 'manage') {
+                manageContent.classList.remove('hidden');
+                historyContent.classList.add('hidden');
+                manageTab.classList.add('border-red-500', 'text-red-600');
+                manageTab.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+                historyTab.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+                historyTab.classList.remove('border-red-500', 'text-red-600');
+            } else { // history
+                manageContent.classList.add('hidden');
+                historyContent.classList.remove('hidden');
+                historyTab.classList.add('border-red-500', 'text-red-600');
+                historyTab.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+                manageTab.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+                manageTab.classList.remove('border-red-500', 'text-red-600');
+                renderOrganizationRequestHistory(); // Render when tab is shown
+            }
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+            document.getElementById(modalId).classList.remove('flex');
+        }
+
+        function showAlert(message, type = 'info') {
+            const alertModal = document.getElementById('alert-modal'); const alertContent = document.getElementById('alert-content');
+            alertContent.textContent = message; alertContent.className = 'p-4 rounded-lg text-white font-semibold shadow-lg';
+            if (type === 'success') alertContent.classList.add('bg-green-500'); else if (type === 'error') alertContent.classList.add('bg-red-500'); else alertContent.classList.add('bg-blue-500');
+            alertModal.classList.remove('hidden');
+            setTimeout(() => { alertModal.classList.add('hidden'); }, 3000);
+        }
+
+        // --- USER ACTIONS ---
+        function submitAppointment() { 
+            let organizationName;
+            const bloodGroup = document.getElementById('appointment-blood-group').value;
+            const date = document.getElementById('appointment-date').value; 
+            if (!date || !bloodGroup) return showAlert('Please fill all fields.', 'error');
+
+            let appointmentDateTime;
+
+            if(modalData.context === 'emergency-transfusion') {
+                 const request = DB.emergencyRequests.find(r => r.id === modalData.emergencyRequestId);
+                 organizationName = request.organizationName;
+                 const time = document.getElementById('appointment-time-input').value;
+                 if (!time) return showAlert('Please select a time.', 'error');
+                 const [hours, minutes] = time.split(':');
+                 appointmentDateTime = new Date(date);
+                 appointmentDateTime.setHours(hours, minutes, 0, 0);
+
+                const maxTime = new Date(request.requestTimestamp).getTime() + (8 * 60 * 60 * 1000);
+                if(appointmentDateTime.getTime() > maxTime) {
+                   return showAlert('Transfusion must be scheduled within 8 hours of the initial request.', 'error');
+                }
+                request.transfusionTimestamp = appointmentDateTime.toISOString();
+                showAlert('Emergency transfusion scheduled!', 'success');
+            } else {
+                organizationName = modalData.organizationName;
+                const time = document.getElementById('appointment-time').value; 
+                if (!time) return showAlert('Please select a time slot.', 'error');
+
+                const startTimeString = time.split(' - ')[0]; const timeParts = startTimeString.match(/(\d+):(\d+)\s*(AM|PM)/);
+                let hour = parseInt(timeParts[1], 10);
+                if (timeParts[3] === 'PM' && hour !== 12) hour += 12; if (timeParts[3] === 'AM' && hour === 12) hour = 0;
+                appointmentDateTime = new Date(date); 
+                appointmentDateTime.setHours(hour, 0, 0, 0);
+
+                const bookingType = (modalData.context === 'general') ? 'transfusion' : 'pledge';
+                const appointment = { id: Date.now(), type: 'appointment', date: new Date().toISOString().split('T')[0], bloodGroup, location: organizationName, timestamp: appointmentDateTime.toISOString(), status: 'Pending Organization Approval', hospitalConfirmed: false, bookingType: bookingType };
+                currentUser.history.unshift(appointment);
+                DB.users[currentUser.email].history = currentUser.history;
+                showAlert(`Appointment at ${organizationName} booked! Awaiting organization confirmation.`, 'success'); 
+            }
+            
+            sessionStorage.setItem('bloodBuddyUser', JSON.stringify(currentUser));
+            closeModal('appointment-modal');
+            renderHistory();
+        }
+
+        function donateToRequest(requestId) { 
+            const threeMonthsAgo = new Date(); threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+            if (currentUser.lastDonation && new Date(currentUser.lastDonation) > threeMonthsAgo) return showAlert('Not eligible to donate yet.', 'error');
+            
+            const request = DB.requests.find(req => req.id === requestId);
+            if (!request) { showAlert('Request no longer available.', 'error'); renderDashboard(); return; }
+            
+            openModal('appointment-modal', { context: 'request', organizationName: request.organizationName, bloodGroup: request.bloodGroup, requestId: requestId });
+        }
+        
+        function openCancelModal(appointmentId) { appointmentToCancelId = appointmentId; openModal('cancel-modal'); }
+
+        function confirmAndExecuteCancellation() { 
+            if (!appointmentToCancelId) return;
+            const appointmentIndex = currentUser.history.findIndex(item => item.id === appointmentToCancelId);
+            if (appointmentIndex === -1) { closeModal('cancel-modal'); return showAlert('Appointment not found.', 'error'); }
+            const appointment = currentUser.history[appointmentIndex];
+            if (((new Date(appointment.timestamp) - new Date()) / 36e5) < 3) { closeModal('cancel-modal'); return showAlert('Cannot cancel less than 3 hours in advance.', 'error');}
+            currentUser.history.splice(appointmentIndex, 1);
+            DB.users[currentUser.email].history = currentUser.history;
+            sessionStorage.setItem('bloodBuddyUser', JSON.stringify(currentUser));
+            closeModal('cancel-modal'); showAlert('Appointment cancelled.', 'success'); renderHistory();
+            appointmentToCancelId = null;
+        }
+
+        function submitEmergencyRequest() {
+            const patientName = document.getElementById('emergency-patient-name').value;
+            const contact = document.getElementById('emergency-contact-number').value;
+            const bloodGroup = document.getElementById('emergency-blood-group').value;
+            const organizationName = document.getElementById('emergency-organization').value;
+            const note = document.getElementById('emergency-note').value;
+
+            if (!patientName || !contact || !bloodGroup || !organizationName) return showAlert('Please fill all required fields.', 'error');
+
+            const newRequest = {
+                id: Date.now(), userId: currentUser.email, userName: currentUser.name, patientName, contact, organizationName, requestedBloodGroup: bloodGroup, note, requestTimestamp: new Date().toISOString(), status: 'pending', orgActionTimestamp: null, transfusionTimestamp: null, cancellationReason: null
+            };
+            DB.emergencyRequests.push(newRequest);
+            closeModal('emergency-request-modal');
+            showAlert('Emergency request sent! The organization will respond shortly.', 'success');
+            renderHistory();
+        }
+
+
+        // --- ORGANIZATION ACTIONS ---
+        function acceptAppointment(appointmentId, userEmail) {
+            const user = DB.users[userEmail];
+            if (!user) return showAlert('User not found.', 'error');
+            const appointment = user.history.find(item => item.id === appointmentId);
+            if (!appointment) return showAlert('Appointment not found.', 'error');
+            appointment.hospitalConfirmed = true;
+            appointment.status = 'Confirmed by Organization';
+            showAlert(`Appointment for ${user.name} confirmed.`, 'success');
+            renderOrganizationDashboard();
+        }
+        
+        function confirmEmergencyRequest(requestId) {
+            const request = DB.emergencyRequests.find(req => req.id === requestId);
+            if (!request) return showAlert('Request not found', 'error');
+            request.status = 'confirmed';
+            request.orgActionTimestamp = new Date().toISOString();
+            clearInterval(emergencyTimers[requestId]);
+            showAlert('Request confirmed. User has been notified to schedule transfusion.', 'success');
+            renderEmergencyRequests();
+        }
+
+        function cancelEmergencyRequest(requestId) {
+            const reason = prompt("Please provide a reason for cancellation (e.g., stock unavailability).");
+            if(reason === null) return; // User clicked cancel on prompt
+
+            const request = DB.emergencyRequests.find(req => req.id === requestId);
+            if (!request) return showAlert('Request not found', 'error');
+            request.status = 'cancelled';
+            request.cancellationReason = reason || 'Not specified';
+            request.orgActionTimestamp = new Date().toISOString();
+            clearInterval(emergencyTimers[requestId]);
+            showAlert('Request has been cancelled.', 'success');
+            renderEmergencyRequests();
+        }
+
+
+        function markAppointmentAsCompleted(appointmentId, userEmail) {
+            const user = DB.users[userEmail];
+            const org = DB.organizations.find(h => h.accountEmail === currentOrganization.email);
+            if (!user || !org) return showAlert('Error processing appointment.', 'error');
+
+            const appointment = user.history.find(item => item.id === appointmentId);
+            if (!appointment) return showAlert('Appointment not found.', 'error');
+            
+            appointment.status = 'Completed';
+
+            if (appointment.bookingType === 'transfusion') {
+                // This is a user receiving blood
+                if (org.availability[appointment.bloodGroup] > 0) {
+                    org.availability[appointment.bloodGroup]--;
+                }
+                org.history.unshift({ type: 'transfusion_completed', userName: user.name, bloodGroup: appointment.bloodGroup, date: new Date() });
+                showAlert(`Transfusion for ${user.name} marked as complete. Stock updated.`, 'success');
+            } else {
+                // This is a user donating blood ('pledge' or legacy undefined)
+                appointment.type = 'donation'; 
+                user.lastDonation = new Date().toISOString();
+                org.availability[appointment.bloodGroup]++;
+                org.history.unshift({ type: 'donation_received', donorName: user.name, bloodGroup: appointment.bloodGroup, date: new Date() });
+                
+                const requestIndex = DB.requests.findIndex(req => req.organizationName === org.name && req.bloodGroup === appointment.bloodGroup && req.status === 'active');
+                if (requestIndex !== -1) {
+                    DB.requests[requestIndex].units--;
+                    if (DB.requests[requestIndex].units <= 0) {
+                        DB.requests[requestIndex].status = 'fulfilled';
+                    }
+                }
+                showAlert(`Donation from ${user.name} marked as complete. Stock updated.`, 'success');
+            }
+
+            renderOrganizationDashboard();
+        }
+
+        function submitOrganizationRequest() {
+            const bloodGroup = document.getElementById('organization-request-blood-group').value;
+            const units = parseInt(document.getElementById('organization-request-units').value, 10);
+            if (!units || units <= 0) return showAlert('Please enter a valid number of units.', 'error');
+            const newRequest = { id: Date.now(), requesterType: 'organization', organizationName: currentOrganization.name, bloodGroup, units, note: `Urgently requires stock.`, date: new Date(), status: 'active' };
+            DB.requests.unshift(newRequest);
+            closeModal('organization-request-modal');
+            showAlert('Public request for blood stock has been created.', 'success');
+        }
+
+        // --- HELPERS ---
+        function timeAgo(date) { 
+             const seconds = Math.floor((new Date() - new Date(date)) / 1000); let interval = seconds / 31536000; if (interval > 1) return Math.floor(interval) + " years ago"; interval = seconds / 2592000; if (interval > 1) return Math.floor(interval) + " months ago"; interval = seconds / 86400; if (interval > 1) return Math.floor(interval) + " days ago"; interval = seconds / 3600; if (interval > 1) return Math.floor(interval) + " hours ago"; interval = seconds / 60; if (interval > 1) return Math.floor(interval) + " minutes ago"; return Math.floor(seconds) + " seconds ago";
+        }
+
+        function isCompatible(donor, recipient) { 
+            const compatibility = { 'O-': ['O-', 'O+', 'A-', 'A+', 'B-', 'B+', 'AB-', 'AB+'], 'O+': ['O+', 'A+', 'B+', 'AB+'], 'A-': ['A-', 'A+', 'AB-', 'AB+'], 'A+': ['A+', 'AB+'], 'B-': ['B-', 'B+', 'AB-', 'AB+'], 'B+': ['B+', 'AB+'], 'AB-': ['AB-', 'AB+'], 'AB+': ['AB+'] };
+            return compatibility[donor]?.includes(recipient);
+        }
+
+    </script>
+</body>
+</html>
+
